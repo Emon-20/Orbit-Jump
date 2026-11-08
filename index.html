@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Neon Bounce - Physics Ball Platformer</title>
+    <meta name="description" content="A fast-paced physics-based bouncing ball arcade game with obstacles, moving platforms, lasers, portals, and victory finish lines.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-wrapper">
+        <!-- Render Canvas -->
+        <canvas id="gameCanvas"></canvas>
+
+        <!-- HUD Layer -->
+        <div id="hud-overlay">
+            <div class="hud-top">
+                <div class="hud-group">
+                    <div class="hud-pill" id="hud-level-pill">
+                        <span class="hud-icon">🚀</span>
+                        <span id="hud-level-name">Level 1</span>
+                    </div>
+                    <div class="hud-pill">
+                        <span class="hud-icon">💎</span>
+                        <span id="hud-score">0</span>
+                    </div>
+                    <div class="hud-pill" id="key-indicator">
+                        <span class="hud-icon">🔑</span>
+                        <span>KEY FOUND</span>
+                    </div>
+                </div>
+
+                <div class="hud-group">
+                    <div class="hud-pill">
+                        <div class="hud-stars" id="hud-stars-container">
+                            <span class="hud-star" id="hud-star-1">★</span>
+                            <span class="hud-star" id="hud-star-2">★</span>
+                            <span class="hud-star" id="hud-star-3">★</span>
+                        </div>
+                    </div>
+                    <div class="hud-pill">
+                        <span class="hud-icon">⏱️</span>
+                        <span id="hud-timer">00:00</span>
+                    </div>
+                    <button class="hud-btn" id="btn-sound-toggle" title="Toggle Sound">🔊</button>
+                    <button class="hud-btn" id="btn-music-toggle" title="Toggle Music">🎵</button>
+                    <button class="hud-btn" id="btn-pause" title="Pause Game">⏸</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- On-Screen Virtual Touch Gamepad -->
+        <div id="touch-controls">
+            <div class="touch-cluster">
+                <button class="touch-btn" id="touch-left">◀</button>
+                <button class="touch-btn" id="touch-right">▶</button>
+            </div>
+            <div class="touch-cluster">
+                <button class="touch-btn touch-btn-jump" id="touch-jump">▲</button>
+            </div>
+        </div>
+
+        <!-- MAIN MENU MODAL -->
+        <div class="screen-modal active" id="modal-menu">
+            <div class="modal-content">
+                <h1 class="modal-title">NEON BOUNCE</h1>
+                <p class="modal-subtitle">Roll, bounce, dodge lethal obstacles & cross the finishing portal!</p>
+                
+                <div class="controls-guide">
+                    <div><span class="key-badge">A / D</span> or <span class="key-badge">◄ / ►</span></div>
+                    <div>Roll Left / Right</div>
+                    <div><span class="key-badge">SPACE</span> / <span class="key-badge">W</span> / <span class="key-badge">▲</span></div>
+                    <div>High Jump / Bounce</div>
+                    <div><span class="key-badge">R</span></div>
+                    <div>Quick Respawn</div>
+                    <div><span class="key-badge">P</span> / <span class="key-badge">ESC</span></div>
+                    <div>Pause Game</div>
+                </div>
+
+                <div class="btn-stack">
+                    <button class="btn-primary" id="btn-start-game">▶ PLAY GAME</button>
+                    <div class="btn-row">
+                        <button class="btn-secondary" id="btn-open-levels">🗺 LEVELS</button>
+                        <button class="btn-secondary" id="btn-open-skins">🎨 BALL SKINS</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- LEVEL SELECT MODAL -->
+        <div class="screen-modal" id="modal-levels">
+            <div class="modal-content">
+                <h2 class="modal-title">SELECT STAGE</h2>
+                <p class="modal-subtitle">Conquer stages and earn 3 gold stars on each track</p>
+                
+                <div class="level-grid" id="level-selection-grid">
+                    <!-- Populated dynamically via JS -->
+                </div>
+
+                <div class="btn-stack">
+                    <button class="btn-secondary" id="btn-close-levels">◀ BACK TO MENU</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- BALL SKINS CUSTOMIZER MODAL -->
+        <div class="screen-modal" id="modal-skins">
+            <div class="modal-content">
+                <h2 class="modal-title">BALL SKINS</h2>
+                <p class="modal-subtitle">Choose your favorite glowing neon sphere</p>
+                
+                <div class="skin-grid" id="skin-selection-grid">
+                    <!-- Populated dynamically via JS -->
+                </div>
+
+                <div class="btn-stack">
+                    <button class="btn-primary" id="btn-close-skins">CONFIRM SELECTION</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- PAUSE MODAL -->
+        <div class="screen-modal" id="modal-pause">
+            <div class="modal-content">
+                <h2 class="modal-title">GAME PAUSED</h2>
+                <p class="modal-subtitle">Take a breather, then dive back in!</p>
+
+                <div class="btn-stack">
+                    <button class="btn-primary" id="btn-resume-game">RESUME</button>
+                    <button class="btn-secondary" id="btn-restart-level">RESTART STAGE</button>
+                    <button class="btn-secondary" id="btn-pause-to-levels">LEVEL SELECT</button>
+                    <button class="btn-secondary" id="btn-pause-to-menu">MAIN MENU</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- VICTORY / LEVEL COMPLETE MODAL -->
+        <div class="screen-modal" id="modal-victory">
+            <div class="modal-content">
+                <h2 class="modal-title">STAGE CLEARED!</h2>
+                <p class="modal-subtitle">You made it through the finish portal!</p>
+
+                <div class="stars-award-display">
+                    <span class="award-star" id="award-star-1">★</span>
+                    <span class="award-star" id="award-star-2">★</span>
+                    <span class="award-star" id="award-star-3">★</span>
+                </div>
+
+                <div class="stats-box">
+                    <div class="stat-item">
+                        <span class="stat-label">TIME</span>
+                        <span class="stat-val" id="vic-time">00:00</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">GEMS</span>
+                        <span class="stat-val" id="vic-gems">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">DEATHS</span>
+                        <span class="stat-val" id="vic-deaths">0</span>
+                    </div>
+                </div>
+
+                <div class="btn-stack">
+                    <button class="btn-primary" id="btn-next-level">NEXT STAGE ▶</button>
+                    <div class="btn-row">
+                        <button class="btn-secondary" id="btn-replay-level">REPLAY</button>
+                        <button class="btn-secondary" id="btn-vic-to-menu">MENU</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- GAME OVER / BALL DESTROYED MODAL -->
+        <div class="screen-modal" id="modal-gameover">
+            <div class="modal-content">
+                <h2 class="modal-title" style="color: #ff3366;">BALL SHATTERED</h2>
+                <p class="modal-subtitle">Watch out for the spikes, lasers and deadly pits!</p>
+
+                <div class="btn-stack">
+                    <button class="btn-danger" id="btn-try-again">TRY AGAIN ↺</button>
+                    <button class="btn-secondary" id="btn-go-to-menu">MAIN MENU</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script src="audio.js"></script>
+    <script src="levels.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>
